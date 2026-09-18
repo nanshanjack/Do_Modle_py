@@ -1,0 +1,54 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ===== 虚拟环境 =====
+.venv/
+venv/
+env/
+ENV/
+
+# ===== 测试 / 覆盖率 =====
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+
+# ===== IDE / 编辑器 =====
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ===== 操作系统 =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== 数据缓存（二进制，可由 sync_*.py 重新生成）=====
+# 不提交 11MB 的 SQLite：每次同步都会重写，二进制 diff 无意义且会让仓库快速膨胀。
+# 数据溯源信息在 data_store/MANIFEST.md（已提交），可用 scripts/data_manifest.py 校验。
+data_store/*.sqlite
+data_store/*.sqlite-*
+data_store/*.db
+data_store/*.parquet
+data_store/raw/
+
+# ===== 抓取失败清单（临时产物）=====
+data_store/financial_failures.json
+
+# ===== 临时输出 =====
+*.log
+*.tmp
+/tmp/

@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "do-modle"
+version = "0.1.0"
+description = "A股量化交易系统（阶段一：601872.SH 招商轮船）"
+requires-python = ">=3.11"
+dependencies = [
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+data = ["baostock>=0.9.3", "pandas>=2.2.0", "pyarrow>=14.0.0"]
+eval = ["quantstats>=0.0.60"]
+reconcile = ["akquant>=0.3.61"]
+
+[tool.setuptools.packages.find]
+include = ["do_modle*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+filterwarnings = ["error::DeprecationWarning:do_modle.*"]

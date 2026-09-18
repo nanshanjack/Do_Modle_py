@@ -1,0 +1,50 @@
+# 全局配置 —— 所有标的共用
+# 注意：成本参数 = 用户实际费率（万分之一佣金 + 免五）
+
+data:
+  provider: baostock
+  store: ./data_store
+  start: "2015-01-01"
+  price_for_factor: hfq        # 因子用后复权（历史不变，无前视）
+  price_for_account: none      # 账户/成交/涨跌停用不复权 + prev_close
+
+cost:
+  commission_rate: 0.0001      # 万分之一
+  min_commission: 0.0          # 免五：无最低佣金，无单笔金额临界点
+  stamp_tax_rate: 0.0005       # 仅卖出
+  transfer_rate: 0.00001       # 双边
+  slippage: 0.0005             # 建模假设；成交价至少移动 1 tick
+  # 往返成本率（不含滑点）= 0.0001*2 + 0.0005 + 0.00001*2 = 0.072%
+  # 往返成本率（含滑点）  = 0.172%
+
+matching:
+  execution_price: next_open   # 禁止改为 same_close
+  volume_limit_pct: 0.10       # 单根 Bar 最大成交量占比
+  partial_fill_policy: cancel  # cancel | carry_over
+  insufficient_cash_policy: shrink   # shrink | reject
+
+pit:
+  daily_bar: "15:00"           # 日线逻辑可见时点
+  financial_report_lag_days:
+    q1: 30
+    q3: 30
+    h1: 60
+    annual: 120
+  express_report_lag_days: 1
+  shipping_index_lag_days: 2
+
+risk:
+  max_order_value_pct: 1.0
+  max_position_pct: 1.0
+  daily_turnover_limit_pct: 0.30
+  consecutive_loss_circuit: 5
+  min_order_value_warning: 20000.0   # 仅告警，不拒单（免五后成本率恒定）
+
+backtest:
+  start: "2016-01-01"
+  end: "2026-09-01"
+  initial_cash: 200000
+  in_sample_end: "2021-12-31"
+  out_of_sample_segments:
+    - ["2022-01-01", "2023-12-31"]   # 油运上行期
+    - ["2024-01-01", "2026-09-01"]   # 回落 / 震荡期

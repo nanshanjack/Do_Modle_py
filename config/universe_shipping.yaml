@@ -1,0 +1,22 @@
+# 航运板块研究池（N = 12）—— 仅用于**截面 IC 研究**，不进入交易链路
+#
+# 用途：单标的（601872）时序 IC 的统计功效极低（N=1，噪声 1.0）。
+#      截面 IC 需要 N ≥ 10 才能把噪声降到 0.316。
+#
+# 交易轨仍只做 601872；本池只多读数据、算截面 IC，不产生交易。
+
+universe:
+  name: shipping
+  symbols:
+    - {symbol: sh.601872, name: 招商轮船, segment: 原油+干散, tradable: true}
+    - {symbol: sh.600026, name: 中远海能, segment: 原油+LNG, tradable: false}
+    - {symbol: sh.601975, name: 招商南油, segment: 成品油, tradable: false}
+    - {symbol: sh.600428, name: 中远海特, segment: 特种船, tradable: false}
+    - {symbol: sh.600798, name: 宁波海运, segment: 干散, tradable: false}
+    - {symbol: sh.601919, name: 中远海控, segment: 集运, tradable: false}
+    - {symbol: sh.603565, name: 中谷物流, segment: 内贸集运, tradable: false}
+    - {symbol: sh.601083, name: 锦江航运, segment: 集运, tradable: false}
+    - {symbol: sh.603209, name: 兴通股份, segment: 液体化学品, tradable: false}
+    - {symbol: sz.001205, name: 盛航股份, segment: 液体化学品, tradable: false}
+    - {symbol: sz.000520, name: 长航凤凰, segment: 干散, tradable: false}
+    - {symbol: sh.603162, name: 海通发展, segment: 干散, tradable: false}

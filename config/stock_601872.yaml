@@ -1,0 +1,11 @@
+# 阶段一标的：招商轮船（601872.SH，主板）
+# baostock 代码格式为 sh.601872
+
+stock:
+  symbol: "sh.601872"
+  name: 招商轮船
+  board: MAIN              # 主板非 ST → 涨跌幅 ±10%
+  benchmark: self_buy_and_hold
+
+backtest:
+  initial_cash: 200000     # 20 万；满仓约 100 手（按近期约 20 元计）
