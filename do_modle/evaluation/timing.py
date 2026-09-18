@@ -43,7 +43,7 @@ from do_modle.numeric import mean as _mean
 from do_modle.numeric import std as _std
 from do_modle.objects import Bar
 
-__all__ = ["TimingResult", "quantile_timing"]
+__all__ = ["EventResult", "TimingResult", "event_study", "quantile_timing"]
 
 
 @dataclass
@@ -189,4 +189,99 @@ def quantile_timing(
         spread_t=spread_t,
         monotonic=monotonic,
         n_non_overlapping=len(pairs),
+    )
+
+
+# ==================== 事件研究 ====================
+
+
+@dataclass
+class EventResult:
+    """事件研究结果：事件后收益 vs 无条件基准。"""
+
+    n_events: int
+    horizon: int
+    mean_event_return: float  # 事件后平均收益
+    mean_baseline_return: float  # 全样本平均（无条件）
+    abnormal_return: float  # 超额 = 事件 − 基准
+    t_stat: float  # 超额收益 t 值
+    hit_rate: float  # 事件后收益 > 0 的比例
+    baseline_hit_rate: float
+
+    def format_text(self, name: str = "") -> str:
+        head = f"[{name}] " if name else ""
+        return (
+            f"{head}事件 {self.n_events} 次  前向 {self.horizon} 日\n"
+            f"    事件后平均 {self.mean_event_return:+.4%}   "
+            f"基准 {self.mean_baseline_return:+.4%}   "
+            f"**超额 {self.abnormal_return:+.4%}**  t={self.t_stat:+.2f}\n"
+            f"    胜率 事件 {self.hit_rate:.1%} vs 基准 {self.baseline_hit_rate:.1%}"
+        )
+
+
+def event_study(
+    bars: Sequence[Bar],
+    event_dates: Sequence[date],
+    *,
+    horizon: int = 20,
+    min_events: int = 5,
+) -> EventResult | None:
+    """事件研究：事件日之后 ``horizon`` 日的收益，与**无条件基准**比较。
+
+    ## 为什么用事件研究而不是 IC
+
+    供应扰动（如霍尔木兹通航骤减）是**离散事件**，不是连续信号。
+    正确的问题不是「运价高时该不该持有」，而是
+    **「扰动发生后，后续收益是否显著高于平时」**。
+
+    ## 基准
+
+    基准 = **全样本同 horizon 的平均收益**（无条件）。
+    超额 = 事件后收益 − 基准。这样才能剥离「这只股票本来就涨」的成分。
+
+    :param event_dates: 事件日（信号日）；收益从**次日开盘**起算（与撮合口径一致）
+    """
+    if len(bars) < horizon + 2 or not event_dates:
+        return None
+
+    date_to_idx = {b.dt.date(): i for i, b in enumerate(bars)}
+
+    # 全样本基准（同 horizon）
+    base: list[float] = []
+    for i in range(len(bars) - horizon - 1):
+        entry, exit_ = bars[i + 1].open, bars[i + horizon].close
+        if entry > 0:
+            base.append(exit_ / entry - 1.0)
+    if len(base) < 10:
+        return None
+    base_mean = _mean(base)
+    base_hit = sum(1 for r in base if r > 0) / len(base)
+
+    # 事件后收益
+    ev: list[float] = []
+    for d in event_dates:
+        i = date_to_idx.get(d)
+        if i is None or i + horizon >= len(bars):
+            continue
+        entry, exit_ = bars[i + 1].open, bars[i + horizon].close
+        if entry > 0:
+            ev.append(exit_ / entry - 1.0)
+
+    if len(ev) < min_events:
+        return None
+
+    ev_mean = _mean(ev)
+    abnormal = ev_mean - base_mean
+    se = _std(ev) / math.sqrt(len(ev)) if len(ev) >= 2 else float("nan")
+    t = abnormal / se if se and se == se and se > 0 else float("nan")
+
+    return EventResult(
+        n_events=len(ev),
+        horizon=horizon,
+        mean_event_return=ev_mean,
+        mean_baseline_return=base_mean,
+        abnormal_return=abnormal,
+        t_stat=t,
+        hit_rate=sum(1 for r in ev if r > 0) / len(ev),
+        baseline_hit_rate=base_hit,
     )
